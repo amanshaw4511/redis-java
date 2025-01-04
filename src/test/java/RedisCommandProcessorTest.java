@@ -23,4 +23,14 @@ class RedisCommandProcessorTest {
                 .isEqualTo("+PONG\r\n");
     }
 
+    @Test
+    void ECHO_command() {
+        var echo = "*2\r\n$4\r\nECHO\r\n$3\r\nhey\r\n";
+
+        var response = redisCommandProcessor.process(echo);
+
+        assertThat(response)
+                .isEqualTo("$3\r\nhey\r\n");
+    }
+
 }
