@@ -1,15 +1,18 @@
+import serialize.RedisSerializer;
+
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Objects;
 
 public class RedisCommandProcessor {
     private final RedisCommandParser commandParser;
+    private final RedisSerializer serializer;
 
-    private Map<String, String> map = new HashMap<>();
+    private final Map<String, String> map = new HashMap<>();
 
-    public RedisCommandProcessor(RedisCommandParser commandParser) {
+    public RedisCommandProcessor(RedisCommandParser commandParser, RedisSerializer serializer) {
         this.commandParser = commandParser;
+        this.serializer = serializer;
     }
 
     public String process(String inputCommand) {
@@ -18,10 +21,10 @@ public class RedisCommandProcessor {
 
         switch (command) {
             case PING -> {
-                return "+PONG\r\n";
+                return serializer.pong();
             }
             case COMMAND -> {
-                return "*0\r\n";
+                return serializer.list(List.of());
             }
             case ECHO -> {
                 return processEcho(parsedCommand);
@@ -54,10 +57,7 @@ public class RedisCommandProcessor {
         var key = parsedCommand.get(1);
 
         String value = map.get(key);
-        if (value == null) {
-            return "$-1\r\n";
-        }
-        return "$" + value.length() + "\r\n" + value + "\r\n";
+        return serializer.str(value);
     }
 
     private String processSet(List<String> parsedCommand) {
@@ -68,6 +68,6 @@ public class RedisCommandProcessor {
 
         map.put(key, value);
 
-        return "+OK" + "\r\n";
+        return serializer.ok();
     }
 }

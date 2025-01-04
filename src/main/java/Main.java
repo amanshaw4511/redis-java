@@ -1,3 +1,5 @@
+import serialize.RedisSerializer;
+
 import java.io.IOException;
 import java.net.InetSocketAddress;
 import java.nio.ByteBuffer;
@@ -8,7 +10,8 @@ import java.nio.channels.SocketChannel;
 
 public class Main {
     private static RedisCommandProcessor processor = new RedisCommandProcessor(
-            new RedisCommandParser()
+            new RedisCommandParser(),
+            new RedisSerializer()
     );
 
     public static void main(String[] args) throws IOException, InterruptedException {

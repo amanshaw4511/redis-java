@@ -1,8 +1,8 @@
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import serialize.RedisSerializer;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.junit.jupiter.api.Assertions.*;
 
 class RedisCommandProcessorTest {
 
@@ -11,7 +11,8 @@ class RedisCommandProcessorTest {
     @BeforeEach
     void setup() {
         redisCommandProcessor = new RedisCommandProcessor(
-                new RedisCommandParser()
+                new RedisCommandParser(),
+                new RedisSerializer()
         );
     }
 
