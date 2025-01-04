@@ -18,7 +18,14 @@ public class Main {
             serverSocket.setReuseAddress(true);
             // Wait for connection from client.
             clientSocket = serverSocket.accept();
-            sendMessage(clientSocket, "+PONG\r\n");
+
+            String message = receiveMessage(clientSocket);
+            while (message != null) {
+                if (message.contains("PING")) {
+                    sendMessage(clientSocket, "+PONG\r\n");
+                }
+                message = receiveMessage(clientSocket);
+            }
         } catch (IOException e) {
             System.out.println("IOException: " + e.getMessage());
         } finally {
@@ -32,12 +39,21 @@ public class Main {
         }
     }
 
+    public static String receiveMessage(Socket socket) throws IOException {
+        var inStream = socket.getInputStream();
+        var reader = new BufferedReader(new InputStreamReader(inStream));
+        var message =  reader.readLine();
+
+        System.out.println("received: " + message);
+        return message;
+    }
+
     public static void sendMessage(Socket socket, String message) throws IOException {
         System.out.println("sending message " + message);
         var outStream = socket.getOutputStream();
         BufferedWriter writer = new BufferedWriter(new OutputStreamWriter(outStream));
         writer.write(message);
-        writer.close();
+        writer.flush();
         System.out.println("send");
     }
 }
