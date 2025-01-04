@@ -35,4 +35,19 @@ class RedisCommandProcessorTest {
                 .isEqualTo("$3\r\nhey\r\n");
     }
 
+    @Test
+    void GET_SET_command() {
+        var get = "*2\r\n$3\r\nGET\r\n$3\r\nfoo\r\n";
+        var set = "*3\r\n$3\r\nSET\r\n$3\r\nfoo\r\n$3\r\nbar\r\n";
+
+        assertThat(redisCommandProcessor.process(get))
+                .isEqualTo("$-1\r\n"); // null return
+
+        assertThat(redisCommandProcessor.process(set))
+                .isEqualTo("+OK\r\n"); // ok
+
+        assertThat(redisCommandProcessor.process(get))
+                .isEqualTo("$3\r\nbar\r\n"); // null return
+    }
+
 }

@@ -1,5 +1,7 @@
 public enum RedisCommands {
     PING,
     COMMAND,
-    ECHO
+    ECHO,
+    GET,
+    SET,
 }
