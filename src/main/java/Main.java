@@ -7,7 +7,9 @@ import java.nio.channels.ServerSocketChannel;
 import java.nio.channels.SocketChannel;
 
 public class Main {
-    private static RedisCommandProcessor processor = new RedisCommandProcessor();
+    private static RedisCommandProcessor processor = new RedisCommandProcessor(
+            new RedisCommandParser()
+    );
 
     public static void main(String[] args) throws IOException, InterruptedException {
         ServerSocketChannel serverSocket = ServerSocketChannel.open();

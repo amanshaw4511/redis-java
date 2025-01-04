@@ -10,7 +10,9 @@ class RedisCommandProcessorTest {
 
     @BeforeEach
     void setup() {
-        redisCommandProcessor = new RedisCommandProcessor();
+        redisCommandProcessor = new RedisCommandProcessor(
+                new RedisCommandParser()
+        );
     }
 
     @Test
