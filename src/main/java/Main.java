@@ -1,3 +1,4 @@
+import lombok.extern.slf4j.Slf4j;
 import serialize.RedisSerializer;
 
 import java.io.IOException;
@@ -8,13 +9,14 @@ import java.nio.channels.Selector;
 import java.nio.channels.ServerSocketChannel;
 import java.nio.channels.SocketChannel;
 
+@Slf4j
 public class Main {
     private static RedisCommandProcessor processor = new RedisCommandProcessor(
             new RedisCommandParser(),
             new RedisSerializer()
     );
 
-    public static void main(String[] args) throws IOException, InterruptedException {
+    public static void main(String[] args) throws IOException {
         ServerSocketChannel serverSocket = ServerSocketChannel.open();
         int DEFAULT_PORT = 6379;
         serverSocket.bind(new InetSocketAddress(DEFAULT_PORT));
@@ -35,7 +37,7 @@ public class Main {
                     SocketChannel clientChannel = serverSocket.accept();
                     clientChannel.configureBlocking(false);
                     clientChannel.register(selector, SelectionKey.OP_READ); // on read is available put the event to selector
-                    System.out.println("Client connected: " + clientChannel.hashCode());
+                    log.info("Client connected {}", clientChannel.getRemoteAddress());
                 }
 
                 if (key.isReadable()) {
@@ -72,7 +74,7 @@ public class Main {
         String message = pair.v1();
         boolean isClientConnected =  pair.v2();
 
-        System.out.println("Received " + client.hashCode() + " : " + message);
+        log.debug("Received message from client {} :\n{}", client.getRemoteAddress(), message);
 
         var response = processor.process(message);
 

@@ -1,3 +1,4 @@
+import lombok.extern.slf4j.Slf4j;
 import serialize.RedisSerializer;
 
 import java.time.LocalDateTime;
@@ -6,6 +7,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+@Slf4j
 public class RedisCommandProcessor {
     private static final String EXPIRY_TOKEN = "PX";
     private final RedisCommandParser commandParser;
@@ -20,6 +22,8 @@ public class RedisCommandProcessor {
 
     public String process(String inputCommand) {
         var parsedCommand = commandParser.parse(inputCommand);
+        log.debug("parsed command: {}", parsedCommand);
+
         var command = RedisCommands.valueOf(parsedCommand.get(0).toUpperCase());
 
         switch (command) {
@@ -56,13 +60,11 @@ public class RedisCommandProcessor {
     }
 
     private String processGet(List<String> parsedCommand) {
+        log.debug("Before GET operation : {}", map);
         assertParamsLen(parsedCommand, 2);
         var key = parsedCommand.get(1);
 
         var value = map.get(key);
-
-        System.out.println(value);
-        System.out.println(parsedCommand);
 
         if (value == null) {
             return serializer.str(null);
@@ -91,6 +93,8 @@ public class RedisCommandProcessor {
 
         if (!hasExpiry) {
             map.put(key, ValueWithExpiry.ofNoExpiry(value));
+
+            log.debug("AFTER SET operation : {}", map);
             return serializer.ok();
         }
 
@@ -98,6 +102,7 @@ public class RedisCommandProcessor {
         var expiryInMillis = Integer.parseInt(parsedCommand.get(4));
 
         map.put(key, ValueWithExpiry.of(value, LocalDateTime.now().plus(expiryInMillis, ChronoUnit.MILLIS)));
+        log.debug("AFTER SET operation : {}", map);
         return serializer.ok();
     }
 }
