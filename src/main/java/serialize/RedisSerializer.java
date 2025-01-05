@@ -26,6 +26,10 @@ public class RedisSerializer {
         return ":" + value + NL;
     }
 
+    public String err(String message) {
+        return "-ERR " + message + NL;
+    }
+
     public String str(String str) {
         if (str == null) {
             return "$-1" + NL;

@@ -70,10 +70,14 @@ public class RedisCommandProcessor {
             return serializer.integer(1);
         }
 
-        var value = Integer.parseInt(memory.get(key).get());
-        var newValue = value + 1;
-        memory.setIfExist(key, Integer.toString(newValue));
-        return serializer.integer(newValue);
+        try {
+            var value = Integer.parseInt(memory.get(key).get());
+            var newValue = value + 1;
+            memory.setIfExist(key, Integer.toString(newValue));
+            return serializer.integer(newValue);
+        } catch (NumberFormatException e) {
+            return serializer.err("value is not an integer or out of range");
+        }
     }
 
     private String processGet(List<String> parsedCommand) {

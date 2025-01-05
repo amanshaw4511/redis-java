@@ -3,7 +3,12 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import serialize.RedisSerializer;
 
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
+
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.in;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 class RedisCommandProcessorTest {
     static final String NL = "\r\n";
@@ -138,5 +143,30 @@ class RedisCommandProcessorTest {
                 .isEqualTo("$1" + NL + "1" + NL);
     }
 
+
+    @Test
+    void INCR_command_value_is_not_int() {
+        var set = serializeInput("SET foo bar");
+        var incr = serializeInput("INCR foo");
+
+        assertEquals("+OK" + NL, process(set));
+        assertEquals("-ERR value is not an integer or out of range" + NL, process(incr));
+    }
+
+
+    String process(String input) {
+        return redisCommandProcessor.process(input);
+    }
+
+    String serializeInput(String input) {
+        var parts = input.split(" ");
+
+        return "*" + parts.length + NL
+                + Stream.of(parts)
+                .map(String::strip)
+                .map(line -> "$" + line.length() + NL + line)
+                .collect(Collectors.joining(NL))
+                + NL;
+    }
 
 }
