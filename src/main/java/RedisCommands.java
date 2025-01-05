@@ -4,4 +4,5 @@ public enum RedisCommands {
     ECHO,
     GET,
     SET,
+    INCR,
 }

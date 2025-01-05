@@ -14,7 +14,8 @@ class RedisCommandProcessorTest {
     void setup() {
         redisCommandProcessor = new RedisCommandProcessor(
                 new RedisCommandParser(),
-                new RedisSerializer()
+                new RedisSerializer(),
+                new RedisInMemory()
         );
     }
 
@@ -66,12 +67,49 @@ class RedisCommandProcessorTest {
                 .isEqualTo("+OK\r\n"); // ok
 
         assertThat(redisCommandProcessor.process(get))
-                .isEqualTo("$3\r\nbar\r\n"); // null return
+                .isEqualTo("$3\r\nbar\r\n");
 
         Thread.sleep(1100);
 
         assertThat(redisCommandProcessor.process(get))
                 .isEqualTo("$-1\r\n"); // null return
     }
+
+    @Test
+    void INCR_command_when_key_doesnt_exist() {
+        var incr = "*2" + NL + "$4" + NL +  "INCR" + NL +  "$3" +  NL + "foo" + NL;
+
+        var get = "*2\r\n$3\r\nGET\r\n$3\r\nfoo\r\n";
+
+        assertThat(redisCommandProcessor.process(incr))
+                .isEqualTo(":1" + NL);
+
+        assertThat(redisCommandProcessor.process(incr))
+                .isEqualTo(":2" + NL);
+
+        assertThat(redisCommandProcessor.process(get))
+                .isEqualTo("$1"+ NL + "2" + NL);
+    }
+
+    @Test
+    void INCR_command_when_key_exist() {
+        var incr = "*2" + NL + "$4" + NL +  "INCR" + NL +  "$3" +  NL + "foo" + NL;
+
+        var get = "*2\r\n$3\r\nGET\r\n$3\r\nfoo\r\n";
+
+        var set = "*3" + NL + "$3" + NL + "SET" + NL +  "$3" + NL + "foo" + NL + "$1" + NL + "5" + NL;
+        assertThat(redisCommandProcessor.process(set))
+                .isEqualTo("+OK\r\n"); // ok
+
+        assertThat(redisCommandProcessor.process(incr))
+                .isEqualTo(":6" + NL);
+
+        assertThat(redisCommandProcessor.process(incr))
+                .isEqualTo(":7" + NL);
+
+        assertThat(redisCommandProcessor.process(get))
+                .isEqualTo("$1"+ NL + "7" + NL);
+    }
+
 
 }

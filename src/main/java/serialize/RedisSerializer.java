@@ -22,6 +22,10 @@ public class RedisSerializer {
         return "*" + len + sb;
     }
 
+    public String integer(int value) {
+        return ":" + value + NL;
+    }
+
     public String str(String str) {
         if (str == null) {
             return "$-1" + NL;

@@ -3,21 +3,20 @@ import serialize.RedisSerializer;
 
 import java.time.LocalDateTime;
 import java.time.temporal.ChronoUnit;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 
 @Slf4j
 public class RedisCommandProcessor {
     private static final String EXPIRY_TOKEN = "PX";
     private final RedisCommandParser commandParser;
     private final RedisSerializer serializer;
+    private final RedisInMemory memory;
 
-    private final Map<String, ValueWithExpiry<String>> map = new HashMap<>();
 
-    public RedisCommandProcessor(RedisCommandParser commandParser, RedisSerializer serializer) {
+    public RedisCommandProcessor(RedisCommandParser commandParser, RedisSerializer serializer, RedisInMemory memory) {
         this.commandParser = commandParser;
         this.serializer = serializer;
+        this.memory = memory;
     }
 
     public String process(String inputCommand) {
@@ -42,6 +41,9 @@ public class RedisCommandProcessor {
             case SET -> {
                 return processSet(parsedCommand);
             }
+            case INCR -> {
+                return processIncr(parsedCommand);
+            }
         }
 
         throw new IllegalArgumentException();
@@ -50,7 +52,7 @@ public class RedisCommandProcessor {
     private String processEcho(List<String> parsedCommand) {
         assertParamsLen(parsedCommand, 2);
         var echoVal = parsedCommand.get(1);
-        return "$" +  echoVal.length() + "\r\n" + echoVal + "\r\n";
+        return "$" + echoVal.length() + "\r\n" + echoVal + "\r\n";
     }
 
     private void assertParamsLen(List<String> parsedCommand, int length) {
@@ -59,23 +61,33 @@ public class RedisCommandProcessor {
         }
     }
 
-    private String processGet(List<String> parsedCommand) {
-        log.debug("Before GET operation : {}", map);
+    private String processIncr(List<String> parsedCommand) {
         assertParamsLen(parsedCommand, 2);
         var key = parsedCommand.get(1);
 
-        var value = map.get(key);
+        if (memory.get(key).isEmpty()) {
+            memory.set(key, "1");
+            return serializer.integer(1);
+        }
 
-        if (value == null) {
+        var value = Integer.parseInt(memory.get(key).get());
+        var newValue = value + 1;
+        memory.set(key, Integer.toString(newValue));
+        return serializer.integer(newValue);
+    }
+
+    private String processGet(List<String> parsedCommand) {
+        log.debug("Before GET operation : {}", memory);
+        assertParamsLen(parsedCommand, 2);
+        var key = parsedCommand.get(1);
+
+        var value = memory.get(key);
+
+        if (value.isEmpty()) {
             return serializer.str(null);
         }
 
-        if (value.isExpired()) {
-            map.remove(key);
-            return serializer.str(null);
-        }
-
-        return serializer.str(value.value());
+        return serializer.str(value.get());
     }
 
     private String processSet(List<String> parsedCommand) {
@@ -92,17 +104,17 @@ public class RedisCommandProcessor {
         var value = parsedCommand.get(2);
 
         if (!hasExpiry) {
-            map.put(key, ValueWithExpiry.ofNoExpiry(value));
+            memory.set(key, value);
 
-            log.debug("AFTER SET operation : {}", map);
+            log.debug("AFTER SET operation : {}", memory);
             return serializer.ok();
         }
 
         assert parsedCommand.get(3).equalsIgnoreCase(EXPIRY_TOKEN);
         var expiryInMillis = Integer.parseInt(parsedCommand.get(4));
 
-        map.put(key, ValueWithExpiry.of(value, LocalDateTime.now().plus(expiryInMillis, ChronoUnit.MILLIS)));
-        log.debug("AFTER SET operation : {}", map);
+        memory.set(key, value, expiryInMillis);
+        log.debug("AFTER SET operation : {}", memory);
         return serializer.ok();
     }
 }

@@ -13,7 +13,8 @@ import java.nio.channels.SocketChannel;
 public class Main {
     private static RedisCommandProcessor processor = new RedisCommandProcessor(
             new RedisCommandParser(),
-            new RedisSerializer()
+            new RedisSerializer(),
+            new RedisInMemory()
     );
 
     public static void main(String[] args) throws IOException {
