@@ -72,7 +72,7 @@ public class RedisCommandProcessor {
 
         var value = Integer.parseInt(memory.get(key).get());
         var newValue = value + 1;
-        memory.set(key, Integer.toString(newValue));
+        memory.setIfExist(key, Integer.toString(newValue));
         return serializer.integer(newValue);
     }
 
