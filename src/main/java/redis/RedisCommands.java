@@ -1,3 +1,5 @@
+package redis;
+
 public enum RedisCommands {
     PING,
     COMMAND,
@@ -5,4 +7,10 @@ public enum RedisCommands {
     GET,
     SET,
     INCR,
+    LPUSH,
+    RPUSH,
+    LPOP,
+    RPOP,
+    LLEN,
+    LRANGE,
 }

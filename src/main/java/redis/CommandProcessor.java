@@ -1,22 +1,25 @@
-import lombok.extern.slf4j.Slf4j;
-import serialize.RedisSerializer;
+package redis;
 
-import java.time.LocalDateTime;
-import java.time.temporal.ChronoUnit;
+import lombok.extern.slf4j.Slf4j;
+import redis.commands.ListCommandHandler;
+import redis.serialize.RedisSerializer;
+
 import java.util.List;
 
 @Slf4j
-public class RedisCommandProcessor {
+public class CommandProcessor {
     private static final String EXPIRY_TOKEN = "PX";
     private final RedisCommandParser commandParser;
     private final RedisSerializer serializer;
     private final RedisInMemory memory;
+    private final ListCommandHandler listCommandHandler;
 
 
-    public RedisCommandProcessor(RedisCommandParser commandParser, RedisSerializer serializer, RedisInMemory memory) {
+    public CommandProcessor(RedisCommandParser commandParser, RedisSerializer serializer, RedisInMemory memory) {
         this.commandParser = commandParser;
         this.serializer = serializer;
         this.memory = memory;
+        this.listCommandHandler = new ListCommandHandler(memory);
     }
 
     public String process(String inputCommand) {
@@ -26,23 +29,40 @@ public class RedisCommandProcessor {
         var command = RedisCommands.valueOf(parsedCommand.get(0).toUpperCase());
 
         switch (command) {
-            case PING -> {
+            case RedisCommands.PING -> {
                 return serializer.pong();
             }
-            case COMMAND -> {
+            case RedisCommands.COMMAND -> {
                 return serializer.list(List.of());
             }
-            case ECHO -> {
+            case RedisCommands.ECHO -> {
                 return processEcho(parsedCommand);
             }
-            case GET -> {
+            case RedisCommands.GET -> {
                 return processGet(parsedCommand);
             }
-            case SET -> {
+            case RedisCommands.SET -> {
                 return processSet(parsedCommand);
             }
-            case INCR -> {
+            case RedisCommands.INCR -> {
                 return processIncr(parsedCommand);
+            }
+        }
+
+        if (listCommandHandler.isListCommand(command)) {
+            switch (command) {
+                case LPUSH -> {
+                    return serializer.integer(listCommandHandler.lpush(parsedCommand));
+                }
+                case RPUSH -> {
+                    return serializer.integer(listCommandHandler.rpush(parsedCommand));
+                }
+                case LRANGE -> {
+                    return serializer.list(listCommandHandler.lrange(parsedCommand));
+                }
+                case LLEN -> {
+                    return serializer.integer(listCommandHandler.llen(parsedCommand));
+                }
             }
         }
 
@@ -65,13 +85,13 @@ public class RedisCommandProcessor {
         assertParamsLen(parsedCommand, 2);
         var key = parsedCommand.get(1);
 
-        if (memory.get(key).isEmpty()) {
+        if (memory.getAsString(key).isEmpty()) {
             memory.set(key, "1");
             return serializer.integer(1);
         }
 
         try {
-            var value = Integer.parseInt(memory.get(key).get());
+            var value = Integer.parseInt(memory.getAsString(key).get());
             var newValue = value + 1;
             memory.setIfExist(key, Integer.toString(newValue));
             return serializer.integer(newValue);
@@ -85,7 +105,7 @@ public class RedisCommandProcessor {
         assertParamsLen(parsedCommand, 2);
         var key = parsedCommand.get(1);
 
-        var value = memory.get(key);
+        var value = memory.getAsString(key);
 
         if (value.isEmpty()) {
             return serializer.str(null);

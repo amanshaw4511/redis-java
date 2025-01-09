@@ -1,5 +1,9 @@
 import lombok.extern.slf4j.Slf4j;
-import serialize.RedisSerializer;
+import redis.CommandProcessor;
+import redis.Pair;
+import redis.RedisCommandParser;
+import redis.RedisInMemory;
+import redis.serialize.RedisSerializer;
 
 import java.io.IOException;
 import java.net.InetSocketAddress;
@@ -11,7 +15,7 @@ import java.nio.channels.SocketChannel;
 
 @Slf4j
 public class Main {
-    private static RedisCommandProcessor processor = new RedisCommandProcessor(
+    private static CommandProcessor processor = new CommandProcessor(
             new RedisCommandParser(),
             new RedisSerializer(),
             new RedisInMemory()

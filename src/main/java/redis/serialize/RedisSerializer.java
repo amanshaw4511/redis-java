@@ -1,25 +1,21 @@
-package serialize;
+package redis.serialize;
 
 import java.util.List;
 
 public class RedisSerializer {
     private static final String NL = "\r\n";
 
-    public String list(List<?> list) {
+    public String list(List<String> list) {
         if (list.isEmpty()) {
             return "*0" + NL;
         }
         var len = list.size();
         StringBuilder sb = new StringBuilder();
         for (var element : list) {
-            var out = switch (element) {
-                case String s -> str(s);
-                default -> throw new IllegalArgumentException("Not yet implemented");
-            };
-            sb.append(out).append(NL);
+            sb.append(str(element));
         }
 
-        return "*" + len + sb;
+        return "*" + len + NL +  sb;
     }
 
     public String integer(int value) {

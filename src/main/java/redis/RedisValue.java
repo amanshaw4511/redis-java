@@ -1,7 +1,10 @@
+package redis;
+
 import lombok.*;
-import lombok.experimental.Accessors;
 
 import java.time.LocalDateTime;
+import java.util.LinkedList;
+import java.util.List;
 
 @ToString
 @AllArgsConstructor(access = AccessLevel.PRIVATE)
@@ -32,6 +35,11 @@ public class RedisValue {
         return (String) value;
     }
 
+    public LinkedList<String> asList() {
+        validateType(Type.LIST);
+        return (LinkedList<String>) value;
+    }
+
     public boolean isExpired() {
         if (expireAfter == null) {
             return false;
@@ -45,6 +53,14 @@ public class RedisValue {
 
     public static RedisValue ofString(String value, LocalDateTime expireAfter) {
         return new RedisValue(Type.STRING, value, expireAfter);
+    }
+
+    public static RedisValue ofList(List<String> value) {
+        return new RedisValue(Type.LIST, new LinkedList<>(value), null);
+    }
+
+    public static RedisValue ofList(List<String> value, LocalDateTime expireAfter) {
+        return new RedisValue(Type.LIST, value,  expireAfter);
     }
 
 }
