@@ -10,10 +10,10 @@ import java.util.Optional;
 @Slf4j
 @ToString
 public class RedisInMemory {
-    private final Map<String, ValueWithExpiry<String>> map = new HashMap<>();
+    private final Map<String, RedisValue> map = new HashMap<>();
 
     public void set(String key, String value) {
-        map.put(key, ValueWithExpiry.ofNoExpiry(value));
+        map.put(key, RedisValue.ofString(value));
     }
 
     public void setIfExist(String key, String newValue) {
@@ -23,11 +23,11 @@ public class RedisInMemory {
             return;
         }
 
-        value.value(newValue);
+        value.updateValue(newValue);
     }
 
     public void set(String key, String value, int expiryInMillis) {
-        map.put(key, ValueWithExpiry.of(value, LocalDateTime.now().plus(expiryInMillis, ChronoUnit.MILLIS)));
+        map.put(key, RedisValue.ofString(value, LocalDateTime.now().plus(expiryInMillis, ChronoUnit.MILLIS)));
     }
 
     public Optional<String> get(String key) {
@@ -40,6 +40,6 @@ public class RedisInMemory {
             return Optional.empty();
         }
 
-        return Optional.of(value.value());
+        return Optional.of(value.asString());
     }
 }
