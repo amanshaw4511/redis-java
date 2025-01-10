@@ -220,11 +220,31 @@ class CommandProcessorTest {
 
         assertEquals(":5" + NL, processS("LPUSH l a b c d e"));
 
-        assertEquals("$c"  + NL, processS("LPOP l"));
+        assertEquals("$1" + NL + "e" + NL, processS("LPOP l"));
         assertEquals(serializeInput("a b c d"), processS("LRANGE l 0 -1"));
 
-        assertEquals("$b"  + NL, processS("LPOP l"));
+        assertEquals("$1" + NL + "d" + NL, processS("LPOP l"));
         assertEquals(serializeInput("a b c"), processS("LRANGE l 0 -1"));
+    }
+
+    @Test
+    void RPOP() {
+        assertEquals("$-1" + NL, processS("RPOP l"));
+
+        assertEquals(":5" + NL, processS("LPUSH l a b c d e"));
+
+        assertEquals("$1" + NL + "a" + NL, processS("RPOP l"));
+        assertEquals(serializeInput("b c d e"), processS("LRANGE l 0 -1"));
+
+        assertEquals("$1" + NL + "b" + NL, processS("RPOP l"));
+        assertEquals(serializeInput("c d e"), processS("LRANGE l 0 -1"));
+    }
+
+    @Test
+    void LPOP_delete_list_when_empty() {
+        assertEquals(":1" + NL, processS("LPUSH l a"));
+        assertEquals("$1" + NL + "a" + NL, processS("LPOP l"));
+        assertEquals("$-1" + NL, processS("GET l")); // null
     }
 
 

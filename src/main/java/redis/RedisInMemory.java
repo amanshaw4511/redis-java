@@ -37,6 +37,10 @@ public class RedisInMemory {
         map.put(key, RedisValue.ofString(value, LocalDateTime.now().plus(expiryInMillis, ChronoUnit.MILLIS)));
     }
 
+    public void remove(String key) {
+        map.remove(key);
+    }
+
     public Optional<RedisValue> get(String key) {
         var value = map.get(key);
         if (value == null) {

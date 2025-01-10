@@ -63,6 +63,12 @@ public class CommandProcessor {
                 case LLEN -> {
                     return serializer.integer(listCommandHandler.llen(parsedCommand));
                 }
+                case LPOP -> {
+                    return serializer.str(listCommandHandler.lpop(parsedCommand));
+                }
+                case RPOP -> {
+                    return serializer.str(listCommandHandler.rpop(parsedCommand));
+                }
             }
         }
 

@@ -22,14 +22,28 @@ public class ListCommandHandler {
     }
 
     public String lpop(List<String> parsedCommand) {
-        return memory.get(parsedCommand.get(1))
-                .map(value -> value.asList().removeLast())
+        var key = parsedCommand.get(1);
+        return memory.get(key)
+                .map(value -> {
+                    var removed = value.asList().removeLast();
+                    if (value.asList().isEmpty()) {
+                        memory.remove(key);
+                    }
+                    return removed;
+                })
                 .orElse(null);
     }
 
     public String rpop(List<String> parsedCommand) {
-        return memory.get(parsedCommand.get(1))
-                .map(value -> value.asList().removeFirst())
+        var key = parsedCommand.get(1);
+        return memory.get(key)
+                .map(value -> {
+                    var removed = value.asList().removeFirst();
+                    if (value.asList().isEmpty()) {
+                        memory.remove(key);
+                    }
+                    return removed;
+                })
                 .orElse(null);
     }
 
