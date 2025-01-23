@@ -1,34 +1,36 @@
-[![progress-banner](https://backend.codecrafters.io/progress/redis/297ae61c-18ee-42f2-8476-d0f0d6fbbe9c)](https://app.codecrafters.io/users/codecrafters-bot?r=2qF)
+# Redis-like In-Memory Store in Java
 
-This is a starting point for Java solutions to the
-["Build Your Own Redis" Challenge](https://codecrafters.io/challenges/redis).
+This project is a simple Redis-like in-memory key-value store implemented in Java. This project is made to understand how redis works, networking, concurrency and persistence(not implementation yet).It supports basic Redis commands such as `SET`, `GET`, `INCR`, `LPUSH`, `RPUSH`, `LPOP`, `RPOP`, `LLEN`, and `LRANGE`. The project uses Java NIO for non-blocking I/O operations, making it suitable for handling multiple client connections concurrently.
 
-In this challenge, you'll build a toy Redis clone that's capable of handling
-basic commands like `PING`, `SET` and `GET`. Along the way we'll learn about
-event loops, the Redis protocol and more.
+## Features
+- **In-Memory Storage**: Stores key-value pairs in memory with optional expiration.
+- **Basic Redis Commands**: Supports a subset of Redis commands for string and list operations.
+- **Non-Blocking I/O**: Uses Java NIO for handling multiple client connections efficiently.
+- **Expiration**: Supports setting expiration time for keys.
+- **List Operations**: Supports operations on lists such as `LPUSH`, `RPUSH`, `LPOP`, `RPOP`, `LLEN`, and `LRANGE`.
 
-**Note**: If you're viewing this repo on GitHub, head over to
-[codecrafters.io](https://codecrafters.io) to try the challenge.
+## Prerequisites
 
-# Passing the first stage
+- Java Development Kit (JDK) 21
+- Maven (for building the project)
 
-The entry point for your Redis implementation is in `src/main/java/Main.java`.
-Study and uncomment the relevant code, and push your changes to pass the first
-stage:
+## Getting Started
+
+### Clone the Repository
 
 ```sh
-git commit -am "pass 1st stage" # any msg
-git push origin master
+git clone https://github.com/your-username/your-repo-name.git
+cd your-repo-name
 ```
 
-That's all!
+### Build the Project
+```sh
+mvn clean install
+```
 
-# Stage 2 & beyond
+### Run the Server
+```sh
+java -jar target/redis-java.jar
+```
 
-Note: This section is for stages 2 and beyond.
-
-1. Ensure you have `mvn` installed locally
-1. Run `./your_program.sh` to run your Redis server, which is implemented in
-   `src/main/java/Main.java`.
-1. Commit your changes and run `git push origin master` to submit your solution
-   to CodeCrafters. Test output will be streamed to your terminal.
+The server will start on port 6379 by default.
